@@ -1,5 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
+  "theme": "mint",
   "name": "Carbide",
   "logo": {
     "dark": "/carbide-dark.svg",
