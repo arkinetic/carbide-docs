@@ -2,78 +2,86 @@
   "$schema": "https://mintlify.com/schema.json",
   "theme": "mint",
   "name": "Carbide",
+
   "logo": {
     "dark": "/carbide-dark.svg",
     "light": "/carbide-light.svg"
   },
+
   "favicon": "/favicon.svg",
+
   "colors": {
     "primary": "#0d9373",
     "light": "#0d9373",
-    "dark": "#0d9373",
-    "anchors": {
-      "from": "#0d9373",
-      "to": "#0e7490"
+    "dark": "#0d9373"
+  },
+
+  "topbar": {
+    "links": [
+      {
+        "name": "Specification",
+        "url": "/roadmap"
+      }
+    ],
+    "ctaButton": {
+      "name": "GitHub",
+      "url": "https://github.com/"
     }
   },
-  "topbarCtaButton": {
-    "name": "GitHub",
-    "url": "https://github.com/"
+
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "getting-started/welcome",
+          "getting-started/installation",
+          "getting-started/hello-world",
+          "getting-started/language-tour"
+        ]
+      },
+      {
+        "group": "Language Guide",
+        "pages": [
+          "language/syntax",
+          "language/variables",
+          "language/types",
+          "language/operators",
+          "language/control-flow",
+          "language/functions",
+          "language/custom-types",
+          "language/strings",
+          "language/arrays",
+          "language/casts",
+          "language/builtins",
+          "language/diagnostics"
+        ]
+      },
+      {
+        "group": "Tooling",
+        "pages": [
+          "tooling/cli",
+          "tooling/project-files",
+          "tooling/build-profiles",
+          "tooling/ide"
+        ]
+      },
+      {
+        "group": "Design & Roadmap",
+        "pages": [
+          "design/philosophy",
+          "design/decisions",
+          "design/architecture",
+          "design/gui-and-graphics",
+          "roadmap"
+        ]
+      }
+    ]
   },
-  "topbarLinks": [
-    {
-      "name": "Specification",
-      "url": "/roadmap"
+
+  "footer": {
+    "socials": {
+      "github": "https://github.com/"
     }
-  ],
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "getting-started/welcome",
-        "getting-started/installation",
-        "getting-started/hello-world",
-        "getting-started/language-tour"
-      ]
-    },
-    {
-      "group": "Language Guide",
-      "pages": [
-        "language/syntax",
-        "language/variables",
-        "language/types",
-        "language/operators",
-        "language/control-flow",
-        "language/functions",
-        "language/custom-types",
-        "language/strings",
-        "language/arrays",
-        "language/casts",
-        "language/builtins",
-        "language/diagnostics"
-      ]
-    },
-    {
-      "group": "Tooling",
-      "pages": [
-        "tooling/cli",
-        "tooling/project-files",
-        "tooling/build-profiles",
-        "tooling/ide"
-      ]
-    },
-    {
-      "group": "Design & Roadmap",
-      "pages": [
-        "design/philosophy",
-        "design/decisions",
-        "design/architecture",
-        "design/gui-and-graphics",
-        "roadmap"
-      ]
-    }
-  ],
-  "footerSocials": {
-    "github": "https://github.com/"
   }
 }
