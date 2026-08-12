@@ -1,0 +1,98 @@
+# Variables
+
+## Declarations
+
+Three equivalent ways to declare a variable:
+
+```carb
+Integer count = 100      // explicit type (canonical style)
+var count = 100          // inferred: Integer
+var count: Integer = 100 // annotation + inference
+```
+
+The spec's canonical style is **type first** (`Integer x = 3`); `var` is preferred when the type is obvious.
+
+## Uninitialized variables
+
+A declaration without an initializer allocates storage **without initializing it**:
+
+```carb
+var x: Integer
+```
+
+Reading `x` before it is assigned is a **compile-time error** (definite-initialization analysis):
+
+```carb
+fn main() {
+    var x: Integer
+    print(x)      // error E3009: use of possibly uninitialized variable 'x'
+}
+```
+
+The analysis is conservative but sound: a variable assigned only inside an `if` branch or a loop body is not considered initialized afterwards.
+
+```carb
+fn main() {
+    var x: Integer
+    if (true) { x = 1 }
+    print(x)      // error E3009 — the compiler can't prove the branch ran
+}
+```
+
+Assign in both branches and it's fine:
+
+```carb
+fn main() {
+    var x: Integer
+    if (cond()) {
+        x = 1
+    } else {
+        x = 2
+    }
+    print(x)      // OK
+}
+```
+
+## Mutation
+
+Variables are mutable:
+
+```carb
+var n = 0
+n = 5
+n += 1
+n++
+n *= 2
+```
+
+## Scope and shadowing
+
+Blocks create scopes. Inner scopes may shadow outer names; redeclaring in the **same** scope is an error:
+
+```carb
+fn main() {
+    var x = 1
+    if (true) {
+        var x = 2   // OK — shadows the outer x
+        print(x)    // 2
+    }
+    print(x)        // 1
+    var x = 3       // error E3008: already declared in this scope
+}
+```
+
+## Type inference rules
+
+- `var x = 3` → `Integer` (64-bit on x64)
+- `var x = 3.5` → `Float64`
+- `var x = "hi"` → `string`
+- `var x = [1, 2]` → `[Integer; 2]`
+- `var x = someCall()` → the function's return type
+- `var x` with no annotation and no initializer → error (nothing to infer from)
+
+Integer and float **literals adapt to their context** when the value fits:
+
+```carb
+var a: Integer8 = 100   // OK — 100 fits
+var b: Integer8 = 300   // error E3012 — does not fit
+```

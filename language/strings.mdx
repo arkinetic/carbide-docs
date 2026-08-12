@@ -1,0 +1,73 @@
+# Strings
+
+`string` is a UTF-8 string: **pointer + byte length**. It is a language type with dedicated methods and operators.
+
+## Literals
+
+```carb
+var s = "Hello"
+var escaped = "tab\there\nnewline"
+var hex = "\x41"            // "A"
+var unicode = "\u{1F600}"   // 😀
+```
+
+Strings cannot span lines (phase 1) — use `\n`.
+
+## Operators
+
+```carb
+var a = "Hello"
+var b = "World"
+
+a + ", " + b + "!"     // concatenation (allocates)
+a == b                 // equality — false
+a != b                 // true
+"abc" < "abd"          // true — lexicographic ordering
+```
+
+## Methods
+
+| Method | Returns | Description |
+| --- | --- | --- |
+| `length()` | `Integer` | byte length |
+| `toUpper()` | `string` | ASCII uppercase (new allocation) |
+| `toString()` | `string` | the string itself |
+
+```carb
+var s = "Carbide"
+print(s.length())    // 7
+print(s.toUpper())   // CARBIDE
+```
+
+## Converting values to strings
+
+Use `.toString()`:
+
+```carb
+(42).toString()          // "42"
+(3.14).toString()        // "3.14"
+true.toString()          // "true"
+(1.5e300).toString()     // "1.5e300"
+```
+
+Floats use **shortest round-trip formatting** (Ryu): the output parses back to the exact same value, and `print(0.1)` prints `0.1`, not `0.10000000000000001`.
+
+## print
+
+```carb
+print("Hello")           // Hello\n
+print("count: " + (42).toString())
+print("a", "b", 1)       // multiple arguments
+```
+
+## Memory model (phase 1)
+
+- String literals live in the binary (no allocation).
+- Concatenation and `toUpper()` allocate on the process heap.
+- **Phase 1 strings are never freed** — allocations live until process exit. This is documented and will change with the memory-management phase (arena/region allocation is planned).
+
+## Gotchas
+
+- `+` between a string and a number is an error — convert explicitly: `"n=" + n.toString()`.
+- `length()` is the **byte** length, not the number of Unicode code points.
+- Strings are immutable in phase 1; `s += "x"` creates a new string.

@@ -1,0 +1,48 @@
+# Casts
+
+Explicit casts convert between numeric types with full control.
+
+## Syntax
+
+A cast looks like a function call named after the target type:
+
+```carb
+var x = Integer8(300)     // truncates to 44 (reinterpret bits)
+var y = Integer64(3.99)   // 3 — truncation toward zero
+var z = Float64(5)        // 5.0
+```
+
+## Rules
+
+| From | To | Semantics |
+| --- | --- | --- |
+| integer → integer | any | truncate if narrower; sign/zero-extend if wider |
+| integer → float | any | exact conversion (`sitofp` / `uitofp`) |
+| float → integer | any | truncate toward zero (`fptosi` / `fptoui`) |
+| `Float32` ↔ `Float64` | | widen / narrow |
+
+- Casts are **numeric-only** in phase 1 (no casts to/from strings, booleans, or custom types).
+- A cast of a **constant that doesn't fit** is a compile-time error:
+
+```carb
+var x = Integer8(300)    // error E3012: value 300 does not fit in Integer8
+```
+
+- Non-constant casts truncate silently (documented; a `checked` cast is planned).
+
+## Cast vs implicit conversion
+
+Implicit conversions are insert-only where the compiler can prove no loss (see [Types](/language/types)). Casts are explicit, always allowed between numeric types, and never elided by the compiler.
+
+## Examples
+
+```carb
+var pi: Float64 = 3.14159
+var truncated = Integer64(pi)     // 3
+var rounded = Integer64(pi + 0.5) // 3 (0.64159 truncates; use your own rounding)
+
+var b: Byte = 200
+var wider = Integer32(b)          // 200
+
+var f = Float32(0.1)              // 0.1 as a 32-bit float
+```

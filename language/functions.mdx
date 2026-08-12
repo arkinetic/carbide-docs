@@ -1,0 +1,93 @@
+# Functions
+
+## Declaration
+
+The canonical style is **type-first parameters** (per the language spec):
+
+```carb
+fn add(Integer a, Integer b) -> Integer {
+    return a + b
+}
+```
+
+`name: Type` is also accepted:
+
+```carb
+fn add(a: Integer, b: Integer) -> Integer {
+    return a + b
+}
+```
+
+- A missing `-> Type` means the function returns `void`.
+- Functions must be called with the exact argument count; argument types convert implicitly (widen-only).
+- Functions may call functions declared later in the program (forward references work).
+
+## Calling
+
+```carb
+fn main() {
+    var sum = add(1, 2)
+    print(sum)
+    print(add(3, 4))
+}
+```
+
+## Parameters are local variables
+
+```carb
+fn countdown(Integer n) {
+    while (n > 0) {
+        print(n)
+        n--          // OK — parameters are assignable
+    }
+}
+```
+
+## Return
+
+- `return` (void) or `return expr` (typed).
+- The compiler verifies all paths return (§ Control Flow).
+- Implicit conversions apply to return values.
+
+## main
+
+The entry point:
+
+```carb
+fn main() { ... }                      // exit code 0
+fn main() -> Integer { return 7 }      // exit code 7
+```
+
+Phase 1: `main` takes no parameters (command-line arguments are planned).
+
+## Methods
+
+Functions declared inside a `type` are methods. They receive an implicit `this` and can read and assign the type's fields by name:
+
+```carb
+type Counter {
+    Integer64 value
+
+    Integer64 next() {
+        value += 1        // field access, no 'this.' needed
+        return value
+    }
+}
+```
+
+Two method styles are accepted:
+
+```carb
+type A {
+    string greet() { return "hi" }     // return-type-first (canonical)
+    fn other() -> Integer { return 1 } // fn style
+}
+```
+
+## Limits (phase 1)
+
+- No lambdas, closures, or function values yet (planned).
+- No overloading — function names must be unique.
+- No multiple return values yet — return a custom type instead.
+- No default/optional parameters.
+- No async functions yet (planned).

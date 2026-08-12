@@ -1,0 +1,94 @@
+# GUI & Graphics — Design Direction
+
+> **Status: design direction, not yet implemented.** This page records the target design for GUI in Carbide so the roadmap is concrete. Nothing here exists in phase 1.
+
+## Goal
+
+From the spec (§41): GUI programming in Carbide should feel like **WinForms but better** — easier, modern, animated — "like an actual web language thing" — while remaining **fully native** with no web runtime.
+
+The design direction combines three layers:
+
+```
+Carbide GUI (library, not compiler magic)
+    │
+    ├── native windows/controls   — Win32 widgets wrapped with a clean API
+    ├── canvas + layout           — immediate-style drawing, declarative layout
+    └── styling & animation       — CSS-like declarative styling, tween engine
+```
+
+## What "like a web language" means here
+
+Web UI frameworks (HTML/CSS) are easy because they are **declarative**: you describe the tree, the styling, and the layout, and the browser does the rest. Carbide's GUI should borrow that model — **without** a browser:
+
+```carb
+import gui
+
+fn main() {
+    var window = Window {
+        title: "Counter"
+        size: (400, 300)
+        content: Column {
+            spacing: 12
+            children: [
+                Text { value: counter.toString() }
+                Button { label: "Click me" }
+            ]
+        }
+    }
+    window.show()
+}
+```
+
+- **Declarative construction** — nested values, like the `type` constructor syntax.
+- **Native widgets** — a `Button` is a real Win32/GDI widget, not a `<div>`.
+- **No HTML/CSS engine** — styling is typed and checked at compile time, not string soup.
+
+## Styling
+
+A typed, compile-time-checked styling model instead of CSS:
+
+```carb
+var style = Style {
+    background: Color.rgb(0.13, 0.58, 0.45)
+    cornerRadius: 8
+    padding: (12, 8)
+    font: Font { family: "Segoe UI", size: 14 }
+    hover: Style { background: Color.rgb(0.10, 0.48, 0.38) }
+}
+```
+
+## Animation
+
+A first-class tween engine built on a compositor:
+
+```carb
+button.onClick(fn() {
+    panel.animate(
+        Property.Opacity, from: 0.0, to: 1.0,
+        duration: 250ms, easing: Easing.EaseOut
+    )
+})
+```
+
+Animations run on a native compositor loop (vsync-driven), not a busy loop.
+
+## Layering
+
+1. **Windowing & input** — Win32 message loop wrapped safely; planned for the Windows/Linux platform phase.
+2. **Widgets** — buttons, text fields, lists, trees, tabs, menus (native-backed).
+3. **Canvas** — immediate drawing (lines, shapes, text, images) for custom controls and games.
+4. **Layout** — column/row/stack/grid, like the fluent API style of the language.
+5. **Style & animation** — the declarative layers above.
+
+## What must exist before GUI
+
+GUI is a **library** in Carbide — it depends on language features that come earlier in the roadmap:
+
+| Dependency | Phase |
+| --- | --- |
+| Pointers, references, `unsafe`, FFI | Phase 8 (advanced native programming) |
+| Lambdas/closures (for event handlers) | before GUI |
+| Platform APIs (`import windows`) | Phase 7 |
+| Generics (for `List<Widget>`, `Vec2<T>`) | before GUI |
+
+The honest order: the compiler needs unsafe + FFI + closures before any real GUI library is possible. See [Roadmap](/roadmap).

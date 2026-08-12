@@ -1,0 +1,73 @@
+# Diagnostics
+
+Carbide diagnostics are designed to be unusually descriptive (a core product goal). Every error says **what happened, where, why, and how to fix it**.
+
+## Anatomy of an error
+
+```
+error[E3006]: unknown variable 'missing'
+  --> src/main.carb:2:11
+   |
+ 2 |     print(missing)
+   |           ^^^^^^^
+   = This name is not a variable in scope.
+   hint: Did you mean to call a function? Functions are not values yet (phase 1).
+```
+
+- **Code** — stable identifier (`E3006`) for tooling and docs
+- **Location** — file:line:column with the exact source line and caret
+- **Explanation** — the `=` line
+- **Hint** — the `hint:` line with a likely fix
+
+## Error codes
+
+| Code | Meaning |
+| --- | --- |
+| **Lexer** | |
+| `E1001` | unterminated block comment |
+| `E1002` | unexpected character |
+| `E1003` | invalid literal |
+| `E1004` | unterminated string |
+| `E1005` | invalid escape sequence |
+| `E1006` | character literals not implemented yet |
+| **Parser** | |
+| `E2001` | expected something, found something else |
+| `E2002` | reserved keyword not available yet |
+| `E2003` | unexpected token at the top level |
+| `E2004` | reserved keyword used as a name |
+| `E2005` | bad array length |
+| `E2006` | generics not implemented yet |
+| `E2007` | unexpected end of file (missing `}`) |
+| `E2008` | `const` not implemented yet |
+| `E2009` | missing separator (`,` or newline) |
+| `E2010` | `->` in a type-body method |
+| **Semantic** | |
+| `E3001` | duplicate type name |
+| `E3002` | unknown type |
+| `E3004` | type mismatch / cannot convert |
+| `E3005` | cannot infer type |
+| `E3006` | unknown variable or function |
+| `E3007` | duplicate declaration |
+| `E3008` | redeclared in the same scope / not an lvalue |
+| `E3009` | use of possibly uninitialized variable |
+| `E3010` | constant index out of bounds |
+| `E3011` | unknown field / invalid cast target |
+| `E3012` | literal does not fit / void has no value |
+| `E3013` | operator not defined for these types |
+| `E3014` | module not found (no standard library yet) |
+| `E3015` | function must return on all paths |
+| `E3016` | constructor missing fields |
+| `E3017` | wrong argument count |
+| `E3018` | cannot print this type |
+| `E3019` | invalid `main` signature |
+| `E3020` | top-level statements with a `main` |
+
+## Runtime panics
+
+Programs can fail at runtime only for a small set of documented reasons:
+
+```
+panic: index out of bounds: index 5, length 3
+```
+
+Printed to stderr; the process exits with code 1. There is no stack trace yet (planned with debug info).

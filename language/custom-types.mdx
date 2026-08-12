@@ -1,0 +1,115 @@
+# Custom Types
+
+Types bundle fields and methods — a value type (like a C# struct), not a managed object.
+
+## Declaration
+
+```carb
+type User {
+    Integer64 id
+    string name
+
+    string toString() {
+        return name
+    }
+}
+```
+
+- Fields are `Type name` lines.
+- Methods are `ReturnType name(params) { }` (or `fn name(params) -> Type { }`).
+- Duplicate fields/methods are compile errors.
+
+## Construction
+
+```carb
+var u = User {
+    id: 42
+    name: "Daniel"
+}
+```
+
+- Field values may be separated by newlines or commas.
+- **Every field must be provided** (phase 1) — missing fields are a compile error:
+
+```carb
+var u = User { id: 42 }     // error E3016: missing fields: name
+```
+
+## Field access
+
+```carb
+print(u.id)          // 42
+u.id = 7             // assignment works on fields
+```
+
+## Methods
+
+```carb
+type Point {
+    Float64 x
+    Float64 y
+
+    Float64 distanceSquared() {
+        return x * x + y * y     // fields of 'this', no prefix needed
+    }
+
+    void move(Float64 dx, Float64 dy) {
+        x += dx
+        y += dy
+    }
+}
+
+fn main() {
+    var p = Point { x: 3.0, y: 4.0 }
+    p.move(1.0, 1.0)
+    print(p.distanceSquared())
+}
+```
+
+Methods are called with `.`:
+
+```carb
+p.move(1.0, 1.0)
+p.distanceSquared()
+```
+
+## toString and print
+
+`print(value)` works on any custom type that defines `string toString()`:
+
+```carb
+type User {
+    Integer64 id
+    string name
+
+    string toString() {
+        return "User(" + id.toString() + ", " + name + ")"
+    }
+}
+
+fn main() {
+    var u = User { id: 42, name: "Daniel" }
+    print(u)          // User(42, Daniel)
+}
+```
+
+Without `toString()`, `print` is a compile error with a helpful hint.
+
+## Value semantics
+
+Types are **value types**: assignment copies the whole value.
+
+```carb
+var a = User { id: 1, name: "a" }
+var b = a          // copy
+b.id = 2
+print(a.id)        // 1 — a is unaffected
+```
+
+## What's not here yet
+
+- Generics (`List<T>`) — planned (the spec requires them; they are a later phase).
+- Interfaces/traits — planned.
+- Inheritance — planned as an option; composition is preferred.
+- Static methods and static fields — planned.
+- Default field values — phase 1 requires explicit construction.

@@ -1,0 +1,52 @@
+# Builtins
+
+Phase 1 provides a small set of always-available builtins — no imports needed.
+
+## print
+
+```carb
+print("Hello")              // prints + newline
+print(42)                   // numbers, booleans, strings
+print(3.14)
+print(true)
+print(user)                 // custom types with string toString()
+print("a", "b", 1)          // multiple arguments
+print()                     // just a newline
+```
+
+Not printable (compile error): arrays directly, `void`, custom types without `toString()`.
+
+## exit
+
+Terminates the process with an exit code:
+
+```carb
+exit(0)     // success
+exit(3)     // error code 3
+```
+
+`exit` never returns; code after it is unreachable.
+
+## String conversions (methods, not builtins)
+
+```carb
+(42).toString()        // "42"
+(3.14).toString()      // "3.14"
+true.toString()        // "true"
+s.toUpper()            // uppercase
+s.length()             // byte length
+```
+
+## Integer-to-string precision
+
+Integer printing is exact. Float printing is **shortest round-trip** (Ryu): the printed digits parse back to exactly the same value.
+
+## What is intentionally NOT a builtin
+
+The spec keeps the core small — HTTP, JSON, crypto, etc. belong to libraries, not the language:
+
+```carb
+import http    // error E3014: no module named 'http'
+```
+
+See the [Roadmap](/roadmap) for the standard-library plan.

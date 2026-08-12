@@ -1,0 +1,41 @@
+# Build Profiles
+
+## Debug (default)
+
+- Very fast compile (`-O0`)
+- No optimization
+- Runtime bounds checks enabled
+- Ideal for the edit/compile/run loop
+
+```bash
+carbide build
+```
+
+## Release
+
+- Aggressive optimization (`-O2` via LLVM)
+- Dead-code elimination, inlining, vectorization
+- Smaller and faster binaries
+
+```bash
+carbide build --release
+```
+
+A project can default to release with `optimization = "release"` in `project.carbproj`.
+
+## What the optimizer does today
+
+Because the backend is LLVM, release builds already get the full standard pipeline: constant folding, constant propagation, inlining, dead-code elimination, loop optimization, and vectorization. The language also helps:
+
+- **Generic-style specialization** will arrive with generics (planned)
+- **Bounds-check elimination** for provably-safe indices (planned — constant indices already skip checks)
+- **LTO** (planned — `-flto` on the clang/lld steps)
+- **PGO** (planned)
+
+## Size reference
+
+| Program | Debug | Release |
+| --- | --- | --- |
+| hello world | ~15 KB | ~7 KB |
+
+(No C runtime, no CRT — the numbers are raw PE size.)

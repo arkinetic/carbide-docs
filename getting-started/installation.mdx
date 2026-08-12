@@ -1,0 +1,60 @@
+# Installation
+
+Phase 1 requires three pieces:
+
+1. **The Carbide compiler** (this repository — build it with Rust)
+2. **LLVM** (provides `clang` and `lld-link` — the backend)
+3. **The Windows SDK** (provides `kernel32.lib` — usually installed with Visual Studio)
+
+## 1. Build the compiler
+
+You need [Rust](https://rustup.rs/) (1.75+). Then:
+
+```bash
+git clone <repo-url> carbide
+cd carbide
+cargo build --release
+```
+
+The compiler binary is `target/release/carbide.exe`. Add it to your PATH, or use it by full path.
+
+> [!TIP]
+> The compiler itself is written in Rust with **zero dependencies** — builds are fast.
+
+## 2. Install LLVM
+
+The compiler shells out to `clang` (to compile its LLVM IR to machine code) and `lld-link` (to link).
+
+**Option A — winget:**
+
+```powershell
+winget install LLVM.LLVM
+```
+
+**Option B — manual:** download `LLVM-<version>-win64.exe` from the [LLVM releases page](https://github.com/llvm/llvm-project/releases) and install it.
+
+> [!IMPORTANT]
+> Open a **new terminal** after installing so PATH changes take effect. If you skip adding LLVM to PATH, the compiler also checks `C:\Program Files\LLVM\bin` automatically.
+
+You can also point the compiler at a specific clang:
+
+```powershell
+$env:CARBIDE_CLANG = "D:\tools\llvm\bin\clang.exe"
+$env:CARBIDE_LLD_LINK = "D:\tools\llvm\bin\lld-link.exe"
+```
+
+## 3. Windows SDK
+
+`kernel32.lib` is needed to link against the Windows API. If you have Visual Studio (any edition) or the standalone Windows SDK installed, the compiler finds it automatically under `C:\Program Files (x86)\Windows Kits\10\Lib\<version>\um\x64\kernel32.lib` (it picks the highest version).
+
+## Verify
+
+```bash
+carbide --version
+carbide run hello.carb
+```
+
+## What the toolchain does not include
+
+- **No C runtime.** Carbide executables link directly against `kernel32` — no CRT, no MSVCRT, no runtime DLL. A hello-world executable is about 15 KB.
+- **No VM, JVM, CLR, or interpreter.** The compiler produces native machine code via LLVM.

@@ -1,0 +1,58 @@
+# Design Philosophy
+
+The language spec (§82) defines twelve principles that outrank any individual syntax decision. They are reproduced here as the contract for the project.
+
+## 1. No artificial ceiling
+
+The language must never become incapable merely because something is "too low-level". If a kernel, a driver, or a debugger needs it, the language must be able to express it.
+
+## 2. Low-level does not mean ugly
+
+Readable concepts instead of cryptic notation as the *primary* interface:
+
+```carb
+Pointer<Integer32> p = addressOf(x)   // preferred
+valueAt(p) = 99
+```
+
+(`&x` / `*p` sugar may exist later — phase 1 has not yet implemented pointers at all.)
+
+## 3. Native by default
+
+No mandatory VM, JVM, CLR, or interpreter. Carbide produces machine code. The phase-1 runtime links only against `kernel32` — no C runtime.
+
+## 4. High-level syntax, low-level execution
+
+Readable APIs compile to efficient native code. String concatenation is a direct call; a typed loop is a real loop. The optimizer (LLVM at `-O2`) does the rest.
+
+## 5. Safe by default, powerful when explicitly unsafe
+
+The compiler prevents what it can prove (uninitialized use, constant out-of-bounds, type errors) and panics on what it can't (dynamic bounds). `unsafe` blocks are planned as the explicit escape hatch — the language will never prevent experts from doing systems programming.
+
+## 6. Automatic optimization
+
+Optimization should be the compiler's job, not the programmer's. No annotation-spam.
+
+## 7. Fast iteration
+
+`carbide check` is the fast loop today; incremental compilation is planned.
+
+## 8. Tiny programs are trivial
+
+`print("Hello world")` is a complete program.
+
+## 9. Huge projects are first-class
+
+`project.carbproj`, multi-file namespaces, and (planned) packages.
+
+## 10. One language across domains
+
+Application → server → database → OS → graphics → networking → tools. See [Roadmap](/roadmap).
+
+## 11. Documentation is part of the product
+
+Every feature has docs, examples, and diagnostics. This site exists because of that principle.
+
+## 12. LLM-friendly by design
+
+Clear syntax, descriptive names, consistent semantics, and machine-readable diagnostics make Carbide unusually easy for coding agents. The spec plans `api.json` / `language-spec.json` machine-readable metadata.

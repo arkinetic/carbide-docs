@@ -1,0 +1,81 @@
+# Arrays
+
+Fixed-size arrays with safe indexing.
+
+## Declaration
+
+```carb
+var primes = [2, 3, 5, 7, 11]        // inferred: [Integer; 5]
+var data: [Float64; 3] = [1.5, 2.5, 3.5]
+```
+
+The type syntax is `[ElementType; Length]`; the length is part of the type.
+
+## Indexing
+
+```carb
+primes[0]      // 2
+primes[2] = 99 // assignment
+```
+
+- Indices are 0-based.
+- The index must be an integer.
+- `.length()` returns the length:
+
+```carb
+print(primes.length())   // 5
+```
+
+## Bounds safety
+
+**Constant indices** are checked at compile time:
+
+```carb
+var a = [1, 2]
+print(a[5])    // error E3010: index 5 is out of bounds for an array of length 2
+```
+
+**Non-constant indices** get a runtime check that panics:
+
+```carb
+fn main() {
+    var a = [1, 2, 3]
+    var i = 5
+    print(a[i])   // panic: index out of bounds: index 5, length 3
+}
+```
+
+The panic prints to stderr and exits with code 1. The optimizer will eliminate checks it can prove unnecessary (planned: provable-index elimination).
+
+## Iterating
+
+```carb
+var total = 0
+for (var i = 0; i < numbers.length(); i++) {
+    total += numbers[i]
+}
+```
+
+## Element types
+
+Arrays can hold any type, including custom types and other arrays:
+
+```carb
+type Point {
+    Float64 x
+    Float64 y
+}
+
+var points = [Point { x: 1.0, y: 2.0 }, Point { x: 3.0, y: 4.0 }]
+print(points[1].x)     // 3
+
+var grid: [[Integer; 2]; 2] = [[1, 2], [3, 4]]
+print(grid[1][0])      // 3
+```
+
+## Limitations (phase 1)
+
+- Fixed size — no dynamic growth (collections like `List<T>` are planned with generics).
+- Array literals need at least one element to infer the type.
+- No array slicing.
+- No `for..in` loops yet.

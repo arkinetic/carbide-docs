@@ -1,0 +1,82 @@
+# Types
+
+Carbide prefers **readable, descriptive type names**. The canonical names are the long forms; short aliases are available.
+
+## Integers
+
+| Canonical | Aliases | Size |
+| --- | --- | --- |
+| `Integer8` | `int8`, `i8` | 8 bits |
+| `Integer16` | `int16`, `i16` | 16 bits |
+| `Integer32` | `int32`, `i32` | 32 bits |
+| `Integer64` | `int64`, `i64` | 64 bits |
+| `UnsignedInteger8` | `uint8`, `u8` | 8 bits |
+| `UnsignedInteger16` | `uint16`, `u16` | 16 bits |
+| `UnsignedInteger32` | `uint32`, `u32` | 32 bits |
+| `UnsignedInteger64` | `uint64`, `u64` | 64 bits |
+| `Integer` | `int` | platform-sized (64-bit on x64) |
+| `UnsignedInteger` | `uint` | platform-sized (64-bit on x64) |
+| `Byte` | `byte` | 8 bits unsigned (alias of `UnsignedInteger8`) |
+
+## Floating point
+
+| Canonical | Aliases | Size |
+| --- | --- | --- |
+| `Float32` | `f32` | 32-bit IEEE |
+| `Float64` | `f64`, `double` | 64-bit IEEE |
+
+## Other
+
+| Type | Meaning |
+| --- | --- |
+| `Boolean` (`bool`) | `true` / `false` |
+| `string` | UTF-8 string — `{ pointer, byte length }` (see [Strings](/language/strings)) |
+| `[T; N]` | fixed-size array of `N` elements of type `T` |
+| `void` | no value — only valid as a function return type |
+
+## Custom types
+
+```carb
+type User {
+    Integer64 id
+    string name
+}
+```
+
+See [Custom Types](/language/custom-types).
+
+## Type sizes
+
+All sizes are exact and guaranteed:
+
+| Type | Size |
+| --- | --- |
+| `Integer8` / `Byte` | 1 byte |
+| `Integer16` | 2 bytes |
+| `Integer32` / `Float32` | 4 bytes |
+| `Integer64` / `Float64` / `Integer` | 8 bytes |
+| `Boolean` | 1 byte |
+| `string` | 16 bytes (pointer + length) |
+| `[T; N]` | `N × size(T)` |
+
+## Implicit conversions (widen-only)
+
+The compiler inserts conversions automatically only when they cannot lose information:
+
+- integer → **wider** integer of the same signedness (`Integer8` → `Integer32`)
+- integer → **strictly wider** integer across signedness (`u8` → `i16`, `i8` → `u16` — the source range must fit)
+- integer → float (`Integer` → `Float64`; note `i64` → `f32` may lose precision — use explicit casts for control)
+- `Float32` → `Float64`
+
+Never implicit: narrowing, float → integer, string ↔ number, mixed signedness at the same width.
+
+```carb
+var a: Integer8 = 100
+var b: Integer16 = a          // OK — widens
+var c: Integer8 = b           // error E3004 — narrowing needs an explicit cast
+var d: Integer64 = 1
+var e: UnsignedInteger64 = 2
+print(d + e)                  // error E3013 — same width, mixed signs
+```
+
+For everything else there's the explicit cast: `Integer8(x)`, `Float64(x)`, ... (see [Casts](/language/casts)).

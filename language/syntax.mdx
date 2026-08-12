@@ -1,0 +1,96 @@
+# Syntax
+
+Carbide uses explicit braces for blocks and C#-flavored declarations. The most important rule:
+
+> **Semicolons are optional.**
+
+A statement ends at a newline, a `;`, a `}`, or end of file. Both of these are valid:
+
+```carb
+fn main() {
+    print("Hello")
+    print("World");
+}
+```
+
+## Comments
+
+```carb
+// line comment
+
+/* block comment */
+/* block comments /* nest */ like this */
+```
+
+## Statements
+
+- `var x = 3` — inferred variable
+- `var x: Integer = 3` — annotated variable
+- `Integer x = 3` — type-first declaration (canonical style)
+- `x = 5`, `x += 1`, `x++` — assignment
+- `if (cond) { } else { }` — braces are required
+- `while (cond) { }` — braces are required
+- `for (var i = 0; i < 10; i++) { }` — C-style, braces required
+- `return expr` / `return` — return from a function
+- `print(...)` — output (builtin)
+
+## When a newline does NOT end a statement
+
+A line that **starts with an operator or `.`** continues the previous expression:
+
+```carb
+var total = 1 +
+            2
+
+server.connections
+    .filter(c => c.connected)   // (fluent chains — phase 1 supports chaining,
+                                //  lambdas come later)
+```
+
+Inside `()`, `[]`, and `{}` (constructor) contexts, newlines are insignificant:
+
+```carb
+var u = User {
+    id: 42
+    name: "Daniel"
+}
+
+var result = add(
+    1,
+    2
+)
+```
+
+## Keywords
+
+Reserved keywords (the spec reserves the full list even when a feature is not yet implemented):
+
+```
+fn  type  var  const  if  else  while  for  return  import
+true  false
+unsafe  async  await  asm  comptime  interface  implements  enum
+struct  match  let  null  spawn  abstract  static
+```
+
+Using an unimplemented keyword produces a clear diagnostic instead of a confusing parse error.
+
+## Literals
+
+```carb
+42              // Integer (64-bit on x64)
+0xFF            // hex
+0b1010          // binary
+0o17            // octal
+1_000_000       // underscores for readability
+3.14            // Float64
+2.5e10          // scientific
+"text"          // string (UTF-8)
+'a'             // character literals: planned, not yet implemented
+true  false     // booleans
+```
+
+String escapes: `\n \t \r \\ \" \' \0 \x41 \u{1F600}`.
+
+## Type names
+
+Canonical descriptive names with short aliases (see [Types](/language/types)).

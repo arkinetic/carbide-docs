@@ -1,0 +1,65 @@
+# Project Files
+
+Projects are optional. A single `.carb` file needs nothing; large projects opt in with `project.carbproj`.
+
+## The file
+
+```ini
+# project.carbproj — the syntax is still evolving (see the spec, §6)
+
+name = "MyServer"
+version = "1.0.0"
+
+target = "native"
+platform = "windows"
+architecture = "x64"
+
+optimization = "debug"
+
+# dependencies = [ "http", "json" ]
+```
+
+## Keys
+
+| Key | Values | Meaning |
+| --- | --- | --- |
+| `name` | any string | project name; also the executable name |
+| `version` | string | project version |
+| `target` | `native` | output kind (phase 1: native only) |
+| `platform` | `windows` | phase 1: windows only |
+| `architecture` | `x64` | phase 1: x64 only |
+| `optimization` | `debug`, `release`, `aggressive` | build profile default |
+| `dependencies` | `["a", "b"]` or `"a"` | package list (package manager planned) |
+
+Unknown keys produce a warning and are ignored. Unsupported values (`platform = "linux"`) are errors — the compiler would rather tell you honestly than pretend.
+
+## Layout
+
+```
+MyServer/
+    project.carbproj
+    src/
+        main.carb
+        network.carb
+        database.carb
+    carbide-build/        # generated
+```
+
+All `.carb` files under `src/` are compiled together into one program — they share a single namespace, so `main.carb` can call functions from `network.carb` directly.
+
+## Creating a project
+
+```bash
+carbide init MyServer
+```
+
+creates `project.carbproj` and `src/main.carb`, then `carbide run` builds and runs it.
+
+## What's planned
+
+- Source roots beyond `src/`
+- Per-profile settings
+- Linker options, LTO, PGO
+- Asset folders
+- Dependencies with a package manager
+- Test and benchmark configuration

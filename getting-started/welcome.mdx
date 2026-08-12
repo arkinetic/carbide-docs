@@ -1,0 +1,53 @@
+# Welcome to Carbide
+
+> **Carbide is a native, low-level, flexible general-purpose programming language in early development.**
+
+It is designed to scale from a one-line program to operating-system-sized codebases, combining:
+
+- C/assembly-level control with **native machine-code execution**
+- **C#-like readability** and ergonomics
+- Rust-like safety where practical — without turning every program into a type-system battle
+- Go-like simplicity in everyday development
+- **Very fast compilation**, aggressive optimization, and tiny binaries
+- First-class interop with operating-system APIs and native libraries
+- An optional project system — powerful for giant projects, unnecessary for tiny ones
+
+The core philosophy:
+
+> **Low-level does not mean cryptic.**
+
+And:
+
+> **There should almost never be a reason to leave Carbide.**
+
+## Where things stand
+
+Carbide is being built in phases. **Phase 1 (current)** is a real, working compiler:
+
+| Area | Status |
+| --- | --- |
+| Lexer, parser, AST | ✅ Done |
+| Semantic analysis & type checker | ✅ Done |
+| Definite-initialization checks | ✅ Done |
+| Compile-time bounds checks + runtime panics | ✅ Done |
+| Native x86-64 backend (LLVM) | ✅ Done |
+| No C runtime — links only against kernel32 | ✅ Done |
+| CLI: `run`, `build`, `check`, `init`, `clean` | ✅ Done |
+| Project files (`.carbproj`) | ✅ Basic |
+| Standard library | Minimal (builtins + strings + arrays) |
+| Package manager, LSP, GUI, networking | Planned — see [Roadmap](/roadmap) |
+
+Everything marked ✅ is tested end-to-end: the compiler compiles and runs real programs on Windows x64.
+
+## The smallest Carbide program
+
+A whole program can be a single line:
+
+```carb
+print("Hello world")
+```
+
+No project file, no imports, no entry-point ceremony. See [Hello World](/getting-started/hello-world) to run it yourself.
+
+> [!NOTE]
+> Phase 1 targets **Windows x64**. Linux/macOS/ARM support is planned (see [Roadmap](/roadmap)).

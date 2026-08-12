@@ -1,0 +1,102 @@
+# Implementation Decisions
+
+The spec (§83) requires every unresolved design question to be **decided explicitly and documented** rather than hidden in code. This page records every decision made so far, with rationale. Decisions are labeled **implemented** or **planned**.
+
+## Language design
+
+### Canonical type names — implemented
+The descriptive long forms are canonical (`Integer32`, `UnsignedInteger64`, `Float32`, `Boolean`, `Byte`, `string`); short aliases exist (`i32`, `u64`, `f32`, `f64`, `bool`, `int`, `uint`). `Integer`/`UnsignedInteger` are platform-sized (64-bit on x64). *Why:* the spec's core principle — low-level capability must be readable.
+
+### `string` — implemented
+A built-in library-style type: `{ pointer, byte-length }`, UTF-8, immutable in phase 1. It is not a primitive like `Integer` but is built into the compiler and runtime. `length()` is the byte length. *Why:* simple, fast, and the basis for the future C-interop story.
+
+### Integer literals — implemented
+Default to `Integer` (64-bit). They **adapt to their context** when the value fits (`var x: Integer8 = 100`), and are a compile error when they don't. *Why:* predictable and safe without annotations.
+
+### Float literals — implemented
+Default to `Float64`; adapt to `Float32` context. **Float output is shortest-round-trip (Ryu)** — `print(0.1)` prints `0.1`, and the output parses back to the exact same value. *Why:* readable output and round-trip safety beat fixed-precision formatting.
+
+### Statement termination — implemented
+Semicolons are optional. A statement ends at a newline, `;`, or `}`. A line starting with an operator or `.` continues the previous expression; inside `()`, `[]`, and constructor `{}` contexts newlines are insignificant. *Why:* spec §11 (optional semicolons) with Go-like predictability.
+
+### Parameter style — implemented
+The spec's canonical form is **type-first**: `fn add(Integer a, Integer b)`. `name: Type` is also accepted. Methods inside `type` bodies are written return-type-first (`string toString() { }`), exactly as in the spec examples; `fn`-style methods also work.
+
+### Variable declarations — implemented
+Both `var x = 3` and type-first `Integer x = 3` (spec §12) work. `var x: Integer = 3` annotates inference.
+
+### if/while/for — implemented
+Braces required; `( )` around conditions required in phase 1 (matches every spec example). For-loop header uses `;` separators.
+
+### Casts — implemented
+Numeric-only, `Type(value)` syntax. Constant out-of-range casts are compile errors; non-constant casts truncate (documented, a `checked` variant is planned).
+
+### Definite initialization — implemented
+Conservative but sound: variables must be assigned on all paths before reading; assignment inside a branch or loop body doesn't count after it. Writes to uninitialized variables are allowed (`var x: Integer; x = 5`).
+
+### Bounds checking — implemented
+Constant indices checked at compile time; dynamic indices get a runtime panic. Check elimination for provable indices is planned.
+
+### Reserved keywords — implemented
+The full spec keyword list is reserved up front so unimplemented features produce precise "not available yet" diagnostics instead of confusing parse errors.
+
+### Error handling — planned
+Phase 1 has no exceptions and no `Result`. `exit()` exists; error-handling design (`Result<T, Error>` vs exceptions, or both) is an open spec decision for a later phase.
+
+### Nullability — planned
+No `null` in phase 1. The spec lists nullable values as an open question.
+
+### Ownership — planned
+Phase 1 has no borrow checker: no references escape analysis beyond definite init. The spec deliberately avoids copying Rust's full ownership system; a pragmatic model comes after more of the language exists.
+
+### Implicit main — implemented
+Top-level statements without `fn main` are wrapped in an implicit main (spec §5/§55). Mixing top-level statements with an explicit `main` is an error.
+
+### Pointers / unsafe / assembly — planned
+Phase 8 of the spec. The canonical forms (`Pointer<T>`, `RawPointer<T>`, `addressOf`, `valueAt`, `unsafe { }`, `asm { }`) are reserved but not yet implemented.
+
+## Compiler architecture
+
+### Implementation language: Rust — implemented
+Zero external dependencies. *Why:* memory safety for compiler code, fast builds for a small crate, and the spec lists Rust as a candidate. Carbide's own compile speed (a product goal) is a property of the Carbide compiler's design, not the host language.
+
+### Backend: LLVM via clang + lld-link — implemented
+The frontend emits textual LLVM IR; `clang -c` compiles it to a COFF object; `lld-link` links it with the runtime and `kernel32.lib`. *Why:* the spec recommends LLVM initially; it provides codegen quality, optimization, and object formats immediately. A custom backend is a long-term option if profiling demands it.
+
+### No C runtime — implemented
+The runtime is freestanding C (compiled `-ffreestanding -fno-builtin`) calling only kernel32: `GetStdHandle`/`WriteFile` for output, `GetProcessHeap`/`HeapAlloc` for strings, `ExitProcess` for exit. `_fltused` (the MSVC float marker) and `__chkstk` (stack probing, in `chkstk.s`) are provided because they normally live in the CRT. *Why:* tiny binaries, no runtime dependencies, and it honors the spec's "no mandatory runtime" principle.
+
+### Float formatting: Ryu — implemented
+The runtime embeds [Ryu](https://github.com/ulfjack/ryu) (Apache-2.0, in `runtime/ryu/`) for shortest round-trip float output. *Why:* correctness is hard; Ryu is battle-tested and exact.
+
+### Strings are heap-allocated and never freed — implemented (documented limitation)
+Concatenation/`toUpper` allocate on the process heap; phase 1 strings live until process exit. *Why:* correctness before memory management. Arena/region allocation and proper lifetimes come with the memory-management phase.
+
+### Toolchain discovery — implemented
+`CARBIDE_CLANG`/`CARBIDE_LLD_LINK` env vars, then PATH, then `C:\Program Files\LLVM\bin`. `kernel32.lib` is found by scanning the Windows Kits directory and picking the highest version.
+
+### Project files — implemented (subset)
+`.carbproj` parses the `key = value` form from the spec; unknown keys warn; unsupported targets/platforms error honestly.
+
+### Diagnostics codes — implemented
+Stable codes (`E1001`–`E3020`) documented on the [Diagnostics](/language/diagnostics) page.
+
+## Open decisions (not yet made)
+
+These remain open per the spec and will be documented here when decided:
+
+- Exact generic syntax (`List<T>` shape is reserved)
+- Lambda syntax
+- Pattern matching
+- Module/namespace syntax
+- Error-handling model (Result vs exceptions)
+- Inheritance policy
+- FFI syntax
+- Assembly syntax details
+- Package registry design
+- ABI rules
+- Memory layout annotations (`@packed`, alignment)
+- Volatile semantics
+- WebAssembly strategy
+- GPU strategy
+- Final branding (the name "Carbide" is a working name — see the spec §79)

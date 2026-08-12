@@ -1,0 +1,73 @@
+# CLI
+
+The compiler binary is `carbide`.
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `carbide run <file.carb>` | compile and run |
+| `carbide run` | compile and run the project in the current directory |
+| `carbide build [--release] [file.carb]` | compile to an executable |
+| `carbide check <file.carb>` | parse + type-check only (fast, no codegen) |
+| `carbide init [name]` | create a project (`project.carbproj` + `src/main.carb`) |
+| `carbide clean` | remove the `carbide-build` directory |
+| `carbide help` | usage |
+| `carbide --version` | compiler version |
+
+## Convenience
+
+A bare `.carb` file behaves like `run`:
+
+```bash
+carbide hello.carb
+```
+
+## Examples
+
+```bash
+carbide run hello.carb              # compile + run one file
+carbide build hello.carb            # just build
+carbide build --release             # optimized build (project mode)
+carbide check hello.carb            # fast check — no codegen
+carbide init MyServer               # new project
+carbide run                         # run the project in this directory
+carbide clean                       # remove build artifacts
+```
+
+## Output
+
+Builds land in `carbide-build/` next to the source (or in the project root for projects):
+
+```
+hello.carb
+carbide-build/
+    hello.ll          # generated LLVM IR (readable, great for learning)
+    hello.obj         # compiled object
+    hello.exe         # the final native executable
+    carbide_runtime.obj
+    ...
+```
+
+The compiler prints a summary:
+
+```
+carbide: built carbide-build\hello.exe (debug, 14.5 KB)
+```
+
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| 0 | success |
+| 1 | compile error, missing input, or toolchain problem |
+| *program* | `carbide run` passes the program's exit code through |
+
+## Environment variables
+
+| Variable | Meaning |
+| --- | --- |
+| `CARBIDE_CLANG` | explicit path to `clang.exe` |
+| `CARBIDE_LLD_LINK` | explicit path to `lld-link.exe` |
+
+Without them, the compiler searches PATH and the standard LLVM install location.

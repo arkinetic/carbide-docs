@@ -1,0 +1,85 @@
+# Architecture
+
+How the phase-1 compiler is built — useful for contributors and for anyone curious how a real compiler works.
+
+## Pipeline
+
+```
+.carb source
+    │  lexer        (src/lexer.rs)  — tokens, optional semicolons
+    ▼
+token stream
+    │  parser       (src/parser.rs) — recursive descent + precedence climbing
+    ▼
+AST
+    │  semantic     (src/semantic.rs)— symbol tables, type checking,
+    │                                definite init, inference
+    ▼
+typed program     (types recorded per expression id)
+    │  codegen     (src/codegen.rs) — LLVM IR text
+    ▼
+module.ll
+    │  clang -c     (src/toolchain.rs)
+    ▼
+module.obj  +  runtime.obj  +  chkstk.obj  +  ryu objects
+    │  lld-link  /entry:main /subsystem:console  kernel32.lib
+    ▼
+app.exe   (native, no CRT)
+```
+
+## Repository layout
+
+```
+carbide/
+    src/                    # the compiler (Rust, zero dependencies)
+        lexer.rs            # tokens, literals, comments
+        parser.rs           # AST construction, optional semicolons
+        ast.rs              # AST definitions (expression ids for typing)
+        types.rs            # the type system, name resolution
+        semantic.rs         # passes: types → signatures → bodies → checks
+        codegen.rs          # LLVM IR emission
+        toolchain.rs        # clang/lld-link/kernel32 discovery
+        project.rs          # project.carbproj
+        driver.rs           # CLI + build pipeline
+        diagnostics.rs      # spans, rendering, error codes
+    runtime/
+        runtime.c           # freestanding runtime (kernel32 only)
+        chkstk.s            # __chkstk stack probe
+        ryu/                # Ryu float printing (Apache-2.0)
+    docs/                   # this site (Mintlify)
+    examples/               # runnable example programs
+    tests/e2e.rs            # end-to-end tests (compile + run + assert)
+```
+
+## How types flow to codegen
+
+Semantic analysis records the inferred type of every expression in a map keyed by **expression id** (assigned by the parser). Codegen reads the map instead of re-inferring — one source of truth, no duplicated logic.
+
+## The runtime
+
+`runtime.c` is freestanding C with **no CRT**:
+
+- Output: `GetStdHandle` + `WriteFile` (UTF-8 bytes)
+- Heap: `GetProcessHeap` + `HeapAlloc` (strings)
+- Exit: `ExitProcess`
+- Float printing: Ryu (shortest round-trip)
+- Also provides `memcpy`/`malloc`/`free` (what LLVM/ryu reference), `_fltused`, and `__chkstk` (the CRT normally provides these)
+
+Strings are `{ ptr, i64 }`; the runtime gets `(ptr, len)` pairs.
+
+## Toolchain requirements
+
+| Piece | Used for | Where it comes from |
+| --- | --- | --- |
+| `clang` | IR → object; compiles the runtime | LLVM release (winget or installer) |
+| `lld-link` | linking | ships with LLVM |
+| `kernel32.lib` | OS API imports | Windows SDK (ships with Visual Studio) |
+
+The compiler locates all three automatically (see [Installation](/getting-started/installation)).
+
+## Design goals the architecture serves
+
+- **Fast check loop**: `carbide check` stops after semantic analysis — no codegen.
+- **Tiny binaries**: no CRT means a hello world is ~15 KB debug / ~7 KB release.
+- **Honest errors**: one diagnostics pipeline (spans → rendered messages) used by every stage.
+- **Future paths**: the IR/text split means a custom backend, WebAssembly output, or an incremental-compilation cache can be added without touching the frontend.

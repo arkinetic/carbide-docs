@@ -1,0 +1,67 @@
+# Roadmap
+
+The spec (§73) defines the phases. This page tracks what is done and what comes next, in order.
+
+## Phase map
+
+| Phase | Content | Status |
+| --- | --- | --- |
+| 1 | Lexer / parser / AST | ✅ Done |
+| 2 | Semantic analysis, type checking, scopes, inference, definite init | ✅ Done |
+| 3 | Native backend (x86-64 via LLVM) | ✅ Done (Windows x64) |
+| 4 | Standard library bootstrap (print, strings, memory, files, process, time) | 🔶 In progress (print/strings done) |
+| 5 | Project system + CLI | ✅ Done (basic) |
+| 6 | Developer tooling (LSP, formatting, highlighting) | ⬜ Planned (IDE exists, LSP next) |
+| 7 | Windows/Linux platform libraries | ⬜ Planned |
+| 8 | Pointers, raw pointers, unsafe, FFI, assembly | ⬜ Planned |
+| 9 | Aggressive optimization, LTO, PGO | 🔶 LLVM -O2 done; LTO/PGO planned |
+| 10 | Self-hosting (compiler written in Carbide) | ⬜ Planned |
+
+## Now (phase 1.5)
+
+- **Standard library growth**: `List<T>` and generics, file I/O, process, time, math
+- **`unsafe` blocks and pointers** (`Pointer<T>`, `RawPointer<T>`, `addressOf`/`valueAt`, `&`/`*`) — unlocks everything below
+- **FFI and `import native`** — call any DLL (`kernel32`, `user32`, ...) directly
+- **Incremental compilation** — cache parsed modules and IR for fast rebuilds
+- **Command-line arguments** for `main`
+- **LSP server** (`carbide lsp`) powering VS Code, JetBrains, Neovim
+
+## The order that matters
+
+Several big spec features depend on earlier ones. The honest dependency chain:
+
+```
+pointers + unsafe + FFI + lambdas
+        │
+        ├──→ OS/platform libraries (import windows, linux)
+        ├──→ GUI & graphics (see the GUI design page)
+        ├──→ networking, HTTP, async
+        └──→ kernel/freestanding development
+generics
+        │
+        └──→ collections (List<T>, Map<K,V>), the real stdlib
+```
+
+## Long-term spec features
+
+| Feature | Spec section |
+| --- | --- |
+| Generics, interfaces, enums, pattern matching | §24–26 |
+| Error handling (`Result<T, Error>` / exceptions) | §28 |
+| Async/await, threads, channels | §29 |
+| OS/FFI, syscalls, inline assembly | §30–32 |
+| SIMD, CPU intrinsics, `@dispatch` | §33–34 |
+| Compile-time execution (`comptime`), macros, `@derive` | §35–36 |
+| Web stack: HTTP/2, HTTP/3, QUIC, WebSockets, TLS | §38 |
+| Databases: SQLite, Postgres clients, ORM | §40 |
+| GUI, graphics, Vulkan/DirectX/Metal, audio, games | §41–42 |
+| Package manager (`carbide add http`) | §70 |
+| Self-hosting compiler | §73.10 |
+
+## Naming
+
+**"Carbide" is a working name.** There are existing products called Carbide (a programming environment, and Carbide 3D). The spec recommends keeping it internally but researching alternatives before public release.
+
+## Contributing
+
+Everything marked ✅ is tested (`cargo test` runs 66 unit + end-to-end tests). The compiler has zero dependencies; the backend needs LLVM (see [Installation](/getting-started/installation)).

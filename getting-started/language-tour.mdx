@@ -1,0 +1,155 @@
+# A Tour of the Language
+
+A fifteen-minute walk through every phase-1 feature. All examples are complete, runnable programs — `carbide run <file>`.
+
+## Variables
+
+```carb
+Integer x = 3          // explicit type first (canonical style)
+var y = 4              // inferred
+var z: Float64 = 5.0   // annotated inference
+```
+
+Variables are mutable by default; reassign with `=`.
+
+## Functions
+
+```carb
+fn factorial(Integer n) -> Integer {
+    if (n <= 1) {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+fn main() {
+    print(factorial(10))
+}
+```
+
+## Custom types with methods
+
+```carb
+type Point {
+    Float64 x
+    Float64 y
+
+    string toString() {
+        return "(" + x.toString() + ", " + y.toString() + ")"
+    }
+
+    Float64 distanceSquared() {
+        return x * x + y * y
+    }
+}
+
+fn main() {
+    var p = Point {
+        x: 3.0
+        y: 4.0
+    }
+    print(p)                    // prints via toString()
+    print(p.distanceSquared())  // 25
+}
+```
+
+## Strings
+
+```carb
+fn main() {
+    var a = "Hello"
+    var b = "World"
+    var c = a + ", " + b + "!"     // concatenation
+    print(c)
+    print(c.length())              // 13
+    print(c.toUpper())             // HELLO, WORLD!
+    print(a == "Hello")            // true
+    print("abc" < "abd")           // true (lexicographic)
+    print((42).toString())         // "42"
+}
+```
+
+## Arrays
+
+```carb
+fn main() {
+    var primes = [2, 3, 5, 7, 11]
+    print(primes[2])          // 5
+    print(primes.length())    // 5
+    primes[0] = 13            // assignment
+
+    var total = 0
+    for (var i = 0; i < primes.length(); i++) {
+        total += primes[i]
+    }
+    print(total)
+}
+```
+
+Out-of-bounds access is a compile error for constant indices and a runtime panic otherwise:
+
+```carb
+fn main() {
+    var a = [1, 2, 3]
+    var i = 5
+    print(a[i])   // panic: index out of bounds: index 5, length 3
+}
+```
+
+## Control flow
+
+```carb
+fn main() {
+    var n = 7
+
+    if (n % 2 == 0) {
+        print("even")
+    } else {
+        print("odd")
+    }
+
+    var i = 0
+    while (i < 3) {
+        print(i)
+        i++
+    }
+
+    for (var j = 10; j > 0; j -= 2) {
+        print(j)
+    }
+}
+```
+
+## Safety checks that happen at compile time
+
+Carbide catches a lot before anything runs:
+
+```carb
+fn main() {
+    var x: Integer
+    print(x)          // error: use of possibly uninitialized variable 'x'
+}
+```
+
+```carb
+fn main() {
+    var x: Integer8 = 300    // error: integer literal 300 does not fit in Integer8
+}
+```
+
+```carb
+fn main() {
+    var a = [1, 2]
+    print(a[5])              // error: index 5 is out of bounds for an array of length 2
+}
+```
+
+## Where the safety stops
+
+Phase 1 has no `unsafe` blocks yet (planned). Everything runs as native code with no hidden runtime — bounds checks are emitted by the compiler and elided for constant indices.
+
+## Next steps
+
+- Read the [Language Guide](/language/syntax) for the complete reference.
+- See [CLI](/tooling/cli) for `build`, `check`, and project commands.
+- See [Roadmap](/roadmap) for what is coming next.

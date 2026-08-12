@@ -1,0 +1,80 @@
+# Control Flow
+
+## if / else
+
+Braces are **required** (no dangling-else ambiguity). `else` may start on the next line.
+
+```carb
+if (score >= 90) {
+    print("A")
+} else if (score >= 80) {
+    print("B")
+} else {
+    print("C")
+}
+```
+
+The condition must be `Boolean`.
+
+## while
+
+```carb
+var i = 0
+while (i < 10) {
+    print(i)
+    i++
+}
+```
+
+## for
+
+C-style: `for (initializer; condition; step)`.
+
+```carb
+for (var i = 0; i < 10; i++) {
+    print(i)
+}
+```
+
+- The initializer's variable is scoped to the loop.
+- The condition must be `Boolean`.
+- `;` separators are required inside the header (phase 1).
+- All three parts are optional: `for (;;) { }` is an infinite loop.
+
+## return
+
+```carb
+fn classify(Integer n) -> string {
+    if (n > 0) {
+        return "positive"
+    } else {
+        return "non-positive"
+    }
+}
+```
+
+A function with a return type must return on **all paths** — the compiler checks:
+
+```carb
+fn f() -> Integer {
+    print(1)      // error E3015: function must return a value on all paths
+}
+```
+
+`while (true)` with a `return` inside counts as returning:
+
+```carb
+fn f() -> Integer {
+    while (true) {
+        return 1
+    }
+}
+```
+
+## Dead code
+
+Statements after `return` are still type-checked but never executed.
+
+## No break/continue yet
+
+Phase 1 has no `break` or `continue` — they are planned. Restructure loops with conditions for now.

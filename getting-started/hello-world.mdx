@@ -1,0 +1,60 @@
+# Hello World
+
+Create a file called `hello.carb` with a single line:
+
+```carb
+print("Hello world")
+```
+
+Compile and run it:
+
+```bash
+carbide run hello.carb
+```
+
+Output:
+
+```
+Hello world
+```
+
+That's it — no project file, no imports, no `main` ceremony.
+
+## What just happened?
+
+1. The compiler **lexed, parsed, and type-checked** your program.
+2. It found no `fn main`, so it wrapped the top-level statement in an implicit one.
+3. It generated LLVM IR and compiled it to machine code with `clang`.
+4. It linked the result against the freestanding runtime and `kernel32.lib` with `lld-link`.
+5. It ran the executable.
+
+The whole pipeline produces a native Windows executable, not an interpreted script:
+
+```bash
+carbide build hello.carb
+ls carbide-build/hello.exe
+```
+
+## With an explicit main
+
+If you prefer (or need more than one statement), write a `main` function:
+
+```carb
+fn main() {
+    print("Hello world")
+    print("This is Carbide")
+}
+```
+
+## How print works
+
+`print` is a builtin — no import needed. It prints its arguments followed by a newline, and supports numbers, booleans, strings, and any custom type that defines `string toString()`:
+
+```carb
+print("The answer is ", 42)
+print(3.14)
+print(true)
+```
+
+> [!NOTE]
+> `print` adds a newline after each argument. There is no `printNoNewline` in phase 1.

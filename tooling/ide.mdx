@@ -1,0 +1,31 @@
+# IDE Support
+
+A lightweight **Carbide IDE** ships with the project (C# WinForms, .NET 10).
+
+## What it does
+
+- Open, edit, and save `.carb` files with **syntax highlighting**
+- **Run** (`carbide run`), **Build**, and **Check** with one click
+- **Output pane** showing program output, exit codes, and compiler diagnostics
+- **Click-to-jump** from a diagnostic to the source line
+- Works on single files and projects (it runs the compiler in the file's directory)
+
+## Using it
+
+```powershell
+cd ide\CarbideIDE
+dotnet run
+```
+
+The IDE finds the compiler automatically: it looks for `carbide.exe` on PATH, in the repo's `target\release\`, and lets you set an explicit path in the toolbar if needed.
+
+## Future editor story
+
+The spec (§53) plans a full **Language Server Protocol** implementation, which will power:
+
+- VS Code extension
+- JetBrains integration
+- Neovim
+- Monaco / web editors
+
+with autocomplete, go-to-definition, find-references, hover docs, signature help, refactoring, semantic highlighting, and import suggestions. The LSP will be built directly into the compiler binary (`carbide lsp`) so every tool shares one implementation.
